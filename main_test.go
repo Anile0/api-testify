@@ -18,17 +18,19 @@ func TestMainHandlerWhenOk(t *testing.T) {
 	handler.ServeHTTP(responseRecorder, req)
 
 	require.Equal(t, http.StatusOK, responseRecorder.Code, "expected status code: %d, got %d", http.StatusOK, responseRecorder.Code)
-	assert.NotEmpty(t, responseRecorder.Body.String(), "empty body")
+	assert.NotEmpty(t, responseRecorder.Body, "empty body")
 }
 
 func TestMainWhenWrongCity(t *testing.T) {
-	req := httptest.NewRequest("GET", "/cafe?city=moscow", nil)
+	req := httptest.NewRequest("GET", "/cafe?count=2&city=tula", nil)
 
 	responseRecorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(mainHandle)
 	handler.ServeHTTP(responseRecorder, req)
 
-	assert.Equal(t, http.StatusBadRequest, responseRecorder.Code, "wrong city value")
+	require.Equal(t, http.StatusBadRequest, responseRecorder.Code, "expected status code: %d, got %d", http.StatusBadRequest, responseRecorder.Code)
+	msg := "wrong city value"
+	assert.Equal(t, msg, responseRecorder.Body.String(), "expected %d, got %d", msg, responseRecorder.Body.String())
 }
 
 func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
@@ -39,7 +41,7 @@ func TestMainHandlerWhenCountMoreThanTotal(t *testing.T) {
 	handler := http.HandlerFunc(mainHandle)
 	handler.ServeHTTP(responseRecorder, req)
 
-	assert.Equal(t, http.StatusOK, responseRecorder.Code, "expected status code: %d, got %d", http.StatusOK, responseRecorder.Code)
+	require.Equal(t, http.StatusOK, responseRecorder.Code, "expected status code: %d, got %d", http.StatusOK, responseRecorder.Code)
 
 	body := responseRecorder.Body.String()
 	list := strings.Split(body, ",")
